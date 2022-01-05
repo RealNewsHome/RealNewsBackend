@@ -39,6 +39,7 @@ func main() {
 	router.HandleFunc("/posts", GetPosts).Methods("GET")
 	router.HandleFunc("/posts/{user_id}", GetPostsByUser).Methods("GET")
 	router.HandleFunc("/post/{id}", GetPostById).Methods("GET")
+	router.HandleFunc("/post", CreatePost).Methods("POST")
 	// router.HandleFunc("/posts", GetPosts).Methods("GET")
 	// router.HandleFunc("/posts/{id}", GetPost).Methods("GET")
 	//get posts by user
@@ -114,6 +115,25 @@ func GetPostById(w http.ResponseWriter, r *http.Request) {
 	var post internal.Post
 	db.First(&post, params["id"])
 	json.NewEncoder(w).Encode(&post)
+}
+
+func CreatePost(w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("Unable to read the body: ", err)
+	}
+
+	var post internal.Post
+	json.Unmarshal(reqBody, &post)
+	if err := db.Create(&post).Error; err != nil {
+		log.Println("Unable to create new post")
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	fmt.Println("EndPoint activated! Create New Post!")
+	json.NewEncoder(w).Encode(post)
 }
 
 // func Get(w http.ResponseWriter, r *http.Request) {
