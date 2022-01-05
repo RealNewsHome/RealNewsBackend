@@ -1,8 +1,20 @@
 package internal
 
+import (
+	"gorm.io/gorm"
+)
+
 type User struct {
-	ID       string
+	gorm.Model
 	Username string
-	Password string
 	Email    string
+	Password string
+}
+
+type Post struct {
+	gorm.Model
+	Title  string
+	Text   string
+	UserID int
+	User   User
 }
