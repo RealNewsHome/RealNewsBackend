@@ -38,6 +38,7 @@ func main() {
 	router.HandleFunc("/newuser", CreateUser).Methods("POST")
 	router.HandleFunc("/posts", GetPosts).Methods("GET")
 	router.HandleFunc("/posts/{user_id}", GetPostsByUser).Methods("GET")
+	router.HandleFunc("/post/{id}", GetPostById).Methods("GET")
 	// router.HandleFunc("/posts", GetPosts).Methods("GET")
 	// router.HandleFunc("/posts/{id}", GetPost).Methods("GET")
 	//get posts by user
@@ -106,6 +107,13 @@ func GetPostsByUser(w http.ResponseWriter, r *http.Request) {
 	db.First(&user, params["id"])
 	db.Model(&user).Association("Posts").Find(&posts)
 	json.NewEncoder(w).Encode(&posts)
+}
+
+func GetPostById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var post internal.Post
+	db.First(&post, params["id"])
+	json.NewEncoder(w).Encode(&post)
 }
 
 // func Get(w http.ResponseWriter, r *http.Request) {
