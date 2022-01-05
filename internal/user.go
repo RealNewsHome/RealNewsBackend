@@ -9,6 +9,12 @@ type User struct {
 	Username string
 	Email    string
 	Password string
+	Posts    []Post
+}
+
+//how to define a method in go: (u === go equivalent of 'this' in JS)
+func (u User) GetLocation() {
+
 }
 
 type Post struct {

@@ -36,6 +36,8 @@ func main() {
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/newuser", CreateUser).Methods("POST")
+	router.HandleFunc("/posts", GetPosts).Methods("GET")
+	router.HandleFunc("/posts/{user_id}", GetPostsByUser).Methods("GET")
 	// router.HandleFunc("/posts", GetPosts).Methods("GET")
 	// router.HandleFunc("/posts/{id}", GetPost).Methods("GET")
 	//get posts by user
@@ -89,16 +91,21 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("EndPoint activated! Create New User!")
 	json.NewEncoder(w).Encode(user)
+}
 
-	// params := mux.Vars(r)
-	// fmt.Println("we are hitting", params)
-	// user := internal.User{Username: params["username"], Email: params["email"], Password: params["password"]}
+func GetPosts(w http.ResponseWriter, r *http.Request) {
+	var posts []internal.Post
+	db.Find(&posts)
+	json.NewEncoder(w).Encode(&posts)
+}
 
-	// db.Create(&user)
-
-	// var users []internal.User
-	// db.Find(&users)
-	// json.NewEncoder(w).Encode(&users)
+func GetPostsByUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var user internal.User
+	var posts []internal.Post
+	db.First(&user, params["id"])
+	db.Model(&user).Association("Posts").Find(&posts)
+	json.NewEncoder(w).Encode(&posts)
 }
 
 // func Get(w http.ResponseWriter, r *http.Request) {
