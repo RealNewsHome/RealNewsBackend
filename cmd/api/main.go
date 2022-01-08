@@ -54,7 +54,7 @@ func main() {
 	//kinda middleware .. browser requires u respond to ceratin requests .. says take this router and wrap it w cors , wrap router w cors stuff
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8000"},
+		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
 	})
 
