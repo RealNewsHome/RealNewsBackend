@@ -15,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spieziocaroline/realnewsbackend/internal"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var db *gorm.DB
@@ -37,19 +38,9 @@ func main() {
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/newuser", CreateUser).Methods("POST")
 	router.HandleFunc("/posts", GetPosts).Methods("GET")
-	router.HandleFunc("/posts/{user_id}", GetPostsByUser).Methods("GET")
+	router.HandleFunc("/posts/byUser/{user_id}", GetPostsByUser).Methods("GET")
 	router.HandleFunc("/post/{id}", GetPostById).Methods("GET")
 	router.HandleFunc("/post", CreatePost).Methods("POST")
-	// router.HandleFunc("/posts", GetPosts).Methods("GET")
-	// router.HandleFunc("/posts/{id}", GetPost).Methods("GET")
-	//get posts by user
-	//create post
-	//delete post(admins only)
-
-	// router.HandleFunc("/cars", GetCars).Methods("GET")
-	// router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
-	// router.HandleFunc("/drivers/{id}", GetDriver).Methods("GET")
-	// router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
 
 	//kinda middleware .. browser requires u respond to ceratin requests .. says take this router and wrap it w cors , wrap router w cors stuff
 
@@ -66,12 +57,19 @@ func main() {
 
 //here is where we spell out what those 'Y' functions actually mean
 
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+//get all users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []internal.User
 	db.Find(&users)
 	json.NewEncoder(w).Encode(&users)
 }
 
+//get specific user
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user internal.User
@@ -79,6 +77,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&user)
 }
 
+//create a user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -87,6 +86,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var user internal.User
 	json.Unmarshal(reqBody, &user)
+	var oldPassword = user.Password
+	hashedPassword, err := HashPassword(oldPassword)
+	user.Password = hashedPassword
+
 	if e := db.Create(&user).Error; e != nil {
 		log.Println("Unable to create new todo")
 	}
@@ -95,12 +98,14 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+//get all posts
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var posts []internal.Post
 	db.Find(&posts)
 	json.NewEncoder(w).Encode(&posts)
 }
 
+//get just posts from a specific user - if their name is clicked
 func GetPostsByUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user internal.User
@@ -110,6 +115,7 @@ func GetPostsByUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&posts)
 }
 
+//get a specific post
 func GetPostById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var post internal.Post
@@ -117,6 +123,7 @@ func GetPostById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&post)
 }
 
+//write a new post
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -135,52 +142,3 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("EndPoint activated! Create New Post!")
 	json.NewEncoder(w).Encode(post)
 }
-
-// func Get(w http.ResponseWriter, r *http.Request) {
-// 	//returns the route variables from mux
-// 	params := mux.Vars(r)
-
-// 	var driver Driver
-// 	var cars []Car
-
-// 	//find the first instance of a type driver that has the id
-// 	db.First(&driver, params["id"])
-// 	//this ... seems to be finding all cars related to the driver ? and all the data on the driver?
-// 	db.Model(&driver).Association("Cars").Find(&cars)
-// 	driver.Cars = cars
-// 	json.NewEncoder(w).Encode(&driver)
-// }
-
-// func DeleteCar(w http.ResponseWriter, r *http.Request) {
-// 	params := mux.Vars(r)
-// 	var car Car
-// 	db.First(&car, params["id"])
-// 	db.Delete(&car)
-
-// 	var cars []Car
-// 	db.Find(&cars)
-// 	json.NewEncoder(w).Encode(&cars)
-// }
-
-// func main() {
-// 	fmt.Println(mypackage.Add(1, 2))
-
-// 	mux := http.NewServeMux()
-// 	mux.HandleFunc("/hello", handleHello)
-
-// 	fmt.Println("Running server on port 8080...")
-// 	http.ListenAndServe(":8080", mux)
-// }
-
-// func handleHello(w http.ResponseWriter, r *http.Request) {
-// 	body, err := io.ReadAll(r.Body)
-// 	defer r.Body.Close()
-// 	if err != nil {
-// 		w.Write([]byte(err.Error()))
-// 		w.WriteHeader(500)
-// 		return
-// 	}
-
-// 	msg := fmt.Sprintf("Hello %s!", string(body))
-// 	w.Write([]byte(msg))
-// }
