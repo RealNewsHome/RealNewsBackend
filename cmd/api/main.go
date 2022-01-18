@@ -8,10 +8,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/spieziocaroline/realnewsbackend/internal"
@@ -60,6 +63,38 @@ func main() {
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
+}
+
+func CreateToken(userid uint64) (string, error) {
+	var err error
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["user_id"] = userid
+	atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, err := at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func Authenticate(email string, password string) {
+	var user internal.User
+	db.First(&user, email)
+	hashedPassword, err := HashPassword(password)
+	if hashedPassword == user.Password {
+		token, err := CreateToken(uint64(user.ID))
+		//find a way to send token to getAuth so we can get user auth .. then pass this to front end & store in get context in App
+	} else {
+		//return an error - incorrect password!
+	}
+}
+
+//unhash password?
+//and get auth ???
+func GetAuth(w http.ResponseWriter, r *http.Request) {
+	//authenticate
 }
 
 //get all users
