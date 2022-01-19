@@ -44,6 +44,8 @@ func main() {
 	router.HandleFunc("/posts/byUser/{user_id}", GetPostsByUser).Methods("GET")
 	router.HandleFunc("/post/{id}", GetPostById).Methods("GET")
 	router.HandleFunc("/post", CreatePost).Methods("POST")
+	router.HandleFunc("/auth/login", GetAuth).Methods("POST")
+	router.HandleFunc("/auth/me", GetMe).Methods("GET")
 
 	//kinda middleware .. browser requires u respond to ceratin requests .. says take this router and wrap it w cors , wrap router w cors stuff
 
@@ -79,22 +81,43 @@ func CreateToken(userid uint64) (string, error) {
 	return token, nil
 }
 
-func Authenticate(email string, password string) {
+func Authenticate(email string, password string) string {
 	var user internal.User
 	db.First(&user, email)
 	hashedPassword, err := HashPassword(password)
+	token, err := CreateToken(uint64(user.ID))
 	if hashedPassword == user.Password {
-		token, err := CreateToken(uint64(user.ID))
+		return token
 		//find a way to send token to getAuth so we can get user auth .. then pass this to front end & store in get context in App
 	} else {
 		//return an error - incorrect password!
+		return "Incorrect password!"
 	}
 }
 
 //unhash password?
 //and get auth ???
 func GetAuth(w http.ResponseWriter, r *http.Request) {
-	//authenticate
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("Unable to read the body: ", err)
+	}
+
+	var user internal.User
+	json.Unmarshal(reqBody, &user)
+	var TOKEN *jwt.Token = Authenticate(user.Email, user.Password)
+	json.NewEncoder(w).Encode(TOKEN)
+}
+
+func findByToken(token *jwt.Token) {
+	jwt.verify(token, process.env.JWT)
+
+	var user internal.User
+
+}
+
+func GetMe(w http.ResponseWriter, r *http.Request) {
+	var
 }
 
 //get all users
