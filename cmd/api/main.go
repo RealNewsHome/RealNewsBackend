@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -81,7 +82,7 @@ func CreateToken(userid uint64) (string, error) {
 	return token, nil
 }
 
-func Authenticate(email string, password string) string {
+func Authenticate(email string, password string) (string, error) {
 	var user internal.User
 
 	db.Where("email = ?", email).First(&user)
@@ -89,17 +90,19 @@ func Authenticate(email string, password string) string {
 	// log.Println("password", password)
 	// log.Println("hashedP", hashedPassword)
 
+	if user.ID == 0 {
+		return "", errors.New("User not found!")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", err
+	}
+
 	token, err := CreateToken(uint64(user.ID))
 	if err != nil {
-		log.Println("Unable to read the body: ", err)
+		return "", err
 	}
-	if password == user.Password {
-		return token
-		//find a way to send token to getAuth so we can get user auth .. then pass this to front end & store in get context in App
-	} else {
-		//return an error - incorrect password!
-		return "Incorrect password!"
-	}
+	return token, nil
 }
 
 //unhash password?
@@ -112,9 +115,15 @@ func GetAuth(w http.ResponseWriter, r *http.Request) {
 
 	var user internal.User
 	json.Unmarshal(reqBody, &user)
-	var TOKEN = Authenticate(user.Email, user.Password)
-	log.Println(TOKEN)
-	json.NewEncoder(w).Encode(TOKEN)
+	token, err := Authenticate(user.Email, user.Password)
+	if err != nil {
+		//set status code
+		w.WriteHeader(401)
+		//turn a string into a byte slice
+		w.Write([]byte("Incorrect email or password"))
+		return
+	}
+	json.NewEncoder(w).Encode(token)
 }
 
 func GetMe(w http.ResponseWriter, r *http.Request) {
@@ -154,6 +163,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &user)
 	var oldPassword = user.Password
 	hashedPassword, err := HashPassword(oldPassword)
+	if err != nil {
+		log.Println("Unable to create hash ", err)
+	}
 	user.Password = hashedPassword
 
 	if e := db.Create(&user).Error; e != nil {
