@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -53,6 +52,7 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
+		AllowedHeaders:   []string{"*"},
 	})
 
 	handler := c.Handler(router)
@@ -75,7 +75,7 @@ func CreateToken(userid uint64) (string, error) {
 	atClaims["user_id"] = userid
 	atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	token, err := at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	token, err := at.SignedString([]byte("jdnfksdmfksd"))
 	if err != nil {
 		return "", err
 	}
@@ -127,10 +127,30 @@ func GetAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMe(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
-	log.Println("request", reqBody)
-	log.Println("error", err)
-	// token := r.Header.authorization
+	// reqBody, err := ioutil.ReadAll(r.Body)
+	// log.Println("r", r)
+	// log.Println("request", reqBody)
+	// log.Println("error", err)
+	tokenString := r.Header.Values("authorization")
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString[0], claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("jdnfksdmfksd"), nil
+	})
+
+	if err != nil {
+		w.WriteHeader(401)
+		w.Write([]byte("Unauthorized"))
+		return
+	}
+	log.Println(token)
+
+	userId := claims["user_id"]
+
+	var user internal.User
+	db.First(&user, userId)
+	json.NewEncoder(w).Encode(&user)
+
+	// log.Println("reqBody", r.Body)
 	// data := jwt.verify(token, process.env.JWT)
 	// var user internal.User
 	// db.First(&user, data.user)
