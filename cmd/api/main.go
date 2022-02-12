@@ -168,7 +168,8 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user internal.User
-	db.First(&user, params["user_id"])
+	db.First(&user, params["id"])
+	log.Println("what params", params, "user", user)
 	json.NewEncoder(w).Encode(&user)
 }
 
