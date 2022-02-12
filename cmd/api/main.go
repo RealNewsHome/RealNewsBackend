@@ -168,7 +168,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user internal.User
-	db.First(&user, params["id"])
+	db.First(&user, params["user_id"])
 	json.NewEncoder(w).Encode(&user)
 }
 
@@ -181,6 +181,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var user internal.User
 	json.Unmarshal(reqBody, &user)
+	log.Println("REQBODY", reqBody)
 	var oldPassword = user.Password
 	hashedPassword, err := HashPassword(oldPassword)
 	if err != nil {
@@ -208,7 +209,9 @@ func GetPostsByUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user internal.User
 	var posts []internal.Post
-	db.First(&user, params["id"])
+
+	db.First(&user, params["user_id"])
+
 	db.Model(&user).Association("Posts").Find(&posts)
 	json.NewEncoder(w).Encode(&posts)
 }
