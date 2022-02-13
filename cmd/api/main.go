@@ -169,7 +169,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user internal.User
 	db.First(&user, params["id"])
-	log.Println("what params", params, "user", user)
 	json.NewEncoder(w).Encode(&user)
 }
 
@@ -228,6 +227,9 @@ func GetPostById(w http.ResponseWriter, r *http.Request) {
 //write a new post
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
+	log.Println("this is my request: ", r)
+	log.Println("this is my reqbody", reqBody)
+
 	if err != nil {
 		log.Println("Unable to read the body: ", err)
 	}
