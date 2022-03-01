@@ -18,9 +18,9 @@ var (
 	}
 
 	posts = []internal.Post{
-		{Title: "The voting poll lines are long in Brighton Beach today", Text: "The line to vote at PS431 wrapped around the corner. But it moved pretty fast.", UserID: 1},
-		{Title: "Milk prices at $4 a gallon", Text: "I paid $4 for a gallon of regular skim milk today at Fairway. Receipt attached.", UserID: 3},
-		{Title: "Don't need a coat today", Text: "Temperature is finally back up to 65 Farenheit in Manhattan.", UserID: 2},
+		{Title: "The voting poll lines are long in Brighton Beach today", Text: "The line to vote at PS431 wrapped around the corner. But it moved pretty fast.", UserID: 1, Upvotes: 2},
+		{Title: "Milk prices at $4 a gallon", Text: "I paid $4 for a gallon of regular skim milk today at Fairway. Receipt attached.", UserID: 3, Upvotes: 1},
+		{Title: "Don't need a coat today", Text: "Temperature is finally back up to 65 Farenheit in Manhattan.", UserID: 2, Upvotes: 4},
 	}
 )
 

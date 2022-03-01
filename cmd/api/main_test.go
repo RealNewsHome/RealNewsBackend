@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestHashPassword(t *testing.T) {
 	got, err := HashPassword("testcat")
@@ -11,5 +13,12 @@ func TestHashPassword(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("an error occurred in test")
+	}
+}
+
+func TestAuthenticate(t *testing.T) {
+	got, err := Authenticate("myfavoritecat@feet.com", "testcat")
+	if len(got) > 0 {
+		t.Errorf("no token returned, instead got: %v", err)
 	}
 }

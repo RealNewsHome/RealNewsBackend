@@ -19,8 +19,9 @@ func (u User) GetLocation() {
 
 type Post struct {
 	gorm.Model
-	Title  string
-	Text   string
-	UserID int
-	User   User
+	Title   string
+	Text    string
+	UserID  int
+	User    User
+	Upvotes int
 }

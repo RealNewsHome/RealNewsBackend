@@ -246,3 +246,40 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("EndPoint activated! Create New Post!")
 	json.NewEncoder(w).Encode(post)
 }
+
+/*
+type App struct {
+	UserDB UserDB
+}
+
+type UserDB interface {
+	GetUser(id string) (internal.User, error)
+	InsertUser(user internal.User) error
+}
+
+type UserDBGorm struct {
+	DB *gorm.DB
+}
+
+func (u UserDBGorm) GetUser(id string) (internal.User, error) {
+	return internal.User{}, errors.New("not implemented yet")
+}
+
+func (u UserDBGorm) InsertUser(user internal.User) error {
+	return errors.New("not implemented yet")
+}
+
+type UserDBLocal struct {
+	data map[uint]internal.User
+}
+
+func (u UserDBLocal) GetUser(id uint) (internal.User, error) {
+	return u.data[id], nil
+
+}
+
+func (u UserDBLocal) InsertUser(user internal.User) error {
+	u.data[user.ID] = user
+	return nil
+}
+*/
