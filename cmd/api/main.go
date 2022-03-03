@@ -46,6 +46,7 @@ func main() {
 	router.HandleFunc("/post", CreatePost).Methods("POST")
 	router.HandleFunc("/auth/login", GetAuth).Methods("POST")
 	router.HandleFunc("/auth/me", GetMe).Methods("POST")
+	router.HandleFunc("/post/{id}", IncreaseUpvote).Methods("PUT")
 
 	//kinda middleware .. browser requires u respond to ceratin requests .. says take this router and wrap it w cors , wrap router w cors stuff
 
@@ -227,8 +228,6 @@ func GetPostById(w http.ResponseWriter, r *http.Request) {
 //write a new post
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
-	log.Println("this is my request: ", r)
-	log.Println("this is my reqbody", reqBody)
 
 	if err != nil {
 		log.Println("Unable to read the body: ", err)
@@ -245,6 +244,18 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("EndPoint activated! Create New Post!")
 	json.NewEncoder(w).Encode(post)
+}
+
+func IncreaseUpvote(w http.ResponseWriter, r *http.Request) {
+	//find post that matches the ID passed in & increase its upvote
+	params := mux.Vars(r)
+	var post internal.Post
+	db.First(&post, params["id"])
+	incremented := post.Upvotes + 1
+	post.Upvotes = incremented
+
+	db.Save(&post)
+	json.NewEncoder(w).Encode(&post)
 }
 
 /*

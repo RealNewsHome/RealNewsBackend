@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -43,6 +41,4 @@ func main() {
 	for _, post := range posts {
 		db.Create(&post)
 	}
-
-	fmt.Println("hello sir")
 }
