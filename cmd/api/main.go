@@ -47,6 +47,7 @@ func main() {
 	router.HandleFunc("/auth/login", GetAuth).Methods("POST")
 	router.HandleFunc("/auth/me", GetMe).Methods("POST")
 	router.HandleFunc("/post/{id}", IncreaseUpvote).Methods("PUT")
+	router.HandleFunc("/uploadFile", UploadFile).Methods("POST")
 
 	//kinda middleware .. browser requires u respond to ceratin requests .. says take this router and wrap it w cors , wrap router w cors stuff
 
@@ -236,6 +237,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	var post internal.Post
 	json.Unmarshal(reqBody, &post)
+	log.Println("reqB", reqBody, "post", post)
 	if err := db.Create(&post).Error; err != nil {
 		log.Println("Unable to create new post")
 		w.WriteHeader(500)
@@ -257,6 +259,35 @@ func IncreaseUpvote(w http.ResponseWriter, r *http.Request) {
 
 	db.Save(&post)
 	json.NewEncoder(w).Encode(&post)
+}
+
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	file, handler, err := r.FormFile("select-image")
+	if err != nil {
+		fmt.Println("Error retrieving file from form data", err)
+		return
+	}
+	defer file.Close()
+	fmt.Print("Uploaded File: %+v\n", handler.Filename)
+	fmt.Print("File Size: %+v\n", handler.Size)
+	fmt.Print("Header: %+v\n", handler.Header)
+
+	tempFile, err := ioutil.TempFile("temp-images", "upload-*.png")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer tempFile.Close()
+
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	tempFile.Write(fileBytes)
+	fmt.Fprintf(w, "Successfully uploaded file")
 }
 
 /*

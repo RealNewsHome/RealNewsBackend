@@ -24,4 +24,5 @@ type Post struct {
 	UserID  int
 	User    User
 	Upvotes int
+	Image   string
 }
