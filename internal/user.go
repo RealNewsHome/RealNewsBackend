@@ -24,5 +24,10 @@ type Post struct {
 	UserID  int
 	User    User
 	Upvotes int
-	Image   string
+	ImageID int
 }
+
+// type Image struct {
+// 	gorm.Model
+// 	Image
+// }

@@ -269,16 +269,15 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-	fmt.Print("Uploaded File: %+v\n", handler.Filename)
-	fmt.Print("File Size: %+v\n", handler.Size)
-	fmt.Print("Header: %+v\n", handler.Header)
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Printf("File Size: %+v\n", handler.Size)
+	fmt.Printf("Header: %+v\n", handler.Header)
 
 	tempFile, err := ioutil.TempFile("temp-images", "upload-*.png")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("creating temp file: %v\n", err)
 		return
 	}
-
 	defer tempFile.Close()
 
 	fileBytes, err := ioutil.ReadAll(file)
