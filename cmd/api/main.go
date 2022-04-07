@@ -229,6 +229,7 @@ func GetPostById(w http.ResponseWriter, r *http.Request) {
 
 //write a new post
 func CreatePost(w http.ResponseWriter, r *http.Request) {
+	log.Printf("do we even hit thisiiiiiiis")
 	reqBody, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
@@ -286,7 +287,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tempFile.Write(fileBytes)
-	fmt.Fprintf(w, "Successfully uploaded file")
+	fmt.Fprintf(w, tempFile.Name())
 }
 
 /*
